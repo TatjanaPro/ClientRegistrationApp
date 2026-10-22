@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TravelBookingSystem.Data;
 using TravelBookingSystem.Models;
+using TravelBookingSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +21,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Configure ASP.NET Core Identity
 builder.Services
-    .AddIdentityApiEndpoints<ApplicationUser>()
+    .AddIdentityApiEndpoints<ApplicationUser>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedAccount = false;
+    })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddHostedService<RoleSeedingService>();
 
 // Add services to the container.
 
@@ -40,10 +53,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
-
 app.Run();
+
+// Allows the integration tests to host the API with an isolated test database.
+public partial class Program { }
