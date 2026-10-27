@@ -19,6 +19,19 @@ public sealed class AuthController(
 {
     private const string ClientRole = "Client";
 
+    [Authorize]
+    [HttpGet("me")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<CurrentUserResponse>> Me()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var roles = await userManager.GetRolesAsync(user);
+        return Ok(new CurrentUserResponse(
+            user.Id, user.FirstName, user.LastName, user.Email, user.PhoneNumber, roles.ToArray()));
+    }
+
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)

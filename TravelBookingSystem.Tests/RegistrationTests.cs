@@ -146,7 +146,8 @@ public sealed class RegistrationTests
 }
 
 internal sealed class RegistrationFactory(bool failRoleAssignment = false,
-    bool failAssignmentResult = false, bool failRoleSeed = false) : WebApplicationFactory<Program>
+    bool failAssignmentResult = false, bool failRoleSeed = false,
+    bool failProfileUpdate = false) : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
 
@@ -171,6 +172,8 @@ internal sealed class RegistrationFactory(bool failRoleAssignment = false,
                 options.UseSqlite(connection);
                 if (failRoleAssignment)
                     options.AddInterceptors(new FailRoleAssignmentInterceptor());
+                if (failProfileUpdate)
+                    options.AddInterceptors(new FailProfileUpdateInterceptor());
             });
         });
     }
